@@ -259,42 +259,7 @@ class FlipkratScrapper:
         except Exception as e:
             return search_string
 
-    def getPrice(self):
-        """
-        This function helps to retrieve the original price of the product.
-        """
-        try:
-            locator = self.getLocatorsObject()
-            original_price = self.findElementByClass(classpath=locator.getOriginalPriceUsingClass()).text
-            print(original_price)
-            return original_price
-        except Exception as e:
-            raise Exception(f"(getPrice) - Not able to get the price of product.\n" + str(e))
-
-    def getDiscountedPercent(self):
-        """
-        This function returns discounted percent for the product.
-        """
-        try:
-            locator = self.getLocatorsObject()
-            discounted_price = self.findElementByClass(classpath=locator.getDiscountPercent()).text
-            print(discounted_price)
-            return discounted_price
-        except Exception as e:
-            return "No Discount"
-
-    def checkMoreOffer(self):
-        """
-        This function checks whether more offer links is provided for the product or not.
-        """
-        try:
-            locator = self.getLocatorsObject()
-            if locator.getMoreOffersUsingClass() in self.driver.page_source:
-                return True
-            else:
-                return False
-        except Exception as e:
-            raise Exception(f"(checkMoreOffer) - Trouble in finding more offer link.\n" + str(e))
+   
 
     def clickOnMoreOffer(self):
         """
@@ -312,37 +277,7 @@ class FlipkratScrapper:
         except Exception as e:
             raise Exception(f"(clickOnMoreOffer) - Not able to click on more offer button.\n" + str(e))
 
-    def getAvailableOffer(self):
-        """
-        This function returns offers available
-        """
-        try:
-            status = self.checkMoreOffer()
-            locator = self.getLocatorsObject()
-            if status:
-                self.clickOnMoreOffer()
-            if locator.getAvailableOffers()[0] in self.driver.page_source:
-                offer_details = self.findElementByClass(classpath=locator.getAvailableOffers()[0]).text
-            elif locator.getAvailableOffers()[1] in self.driver.page_source:
-                offer_details = self.findElementByClass(classpath=locator.getAvailableOffers()[1]).text
-            else:
-                offer_details = "No Offer For the product"
-            return offer_details
-        except Exception as e:
-            raise Exception(f"(getAvailableOffer) - Not able to get the offer details of product.\n" + str(e))
-
-    def getOfferDetails(self):
-        """
-        This function returns the offers in formatted way.
-        """
-        try:
-            available_offers = self.getAvailableOffer()
-            split_offers = available_offers.split("\n")
-            print(split_offers[1:])
-            return split_offers[1:]
-        except Exception as e:
-            return "No offer Available"
-
+ 
     def checkViewPlanForEMI(self):
         """
         This function returns boolean value for EMI is available or not.
@@ -375,24 +310,6 @@ class FlipkratScrapper:
         except Exception as e:
             return "NO EMI Plans"
 
-    def getTotalReviewPage(self):
-        """
-        This function retrieves total number of pages available for review
-        """
-        try:
-            locator = self.getLocatorsObject()
-            if locator.getMoreReviewUsingClass()[0] in self.driver.page_source:
-                self.findElementByClass(classpath=locator.getMoreReviewUsingClass()[0]).click()
-            elif locator.getMoreReviewUsingClass()[1] in self.driver.page_source:
-                self.findElementByClass(classpath=locator.getMoreReviewUsingClass()[1]).click()
-            else:
-                return int(1)
-            total_review_page = [self.findElementByClass(classpath=locator.getTotalReviewPage()).text][0]
-            split_values = total_review_page.split("\n")
-            value = str(split_values[0]).split()[-1]
-            return int(value)
-        except Exception as e:
-            return int(1)
 
     def wait(self):
         """
@@ -453,15 +370,7 @@ class FlipkratScrapper:
         except Exception as e:
             raise Exception(f"(checkForNextPageLink) - Not able to click on next button.\n" + str(e))
 
-    def getExpectedCountForLooping(self, expected_review):
-        """
-        This functoin retrives the total number of pages which should be searched for review
-        """
-        try:
-            expected_count = expected_review / 10
-            return int(expected_count)
-        except Exception as e:
-            raise Exception(f"(getExpectedCountForLooping) - Something went wrong with review count.\n" + str(e))
+ 
 
     def getReviewDetailsForProduct(self):
         """
@@ -483,58 +392,11 @@ class FlipkratScrapper:
                 f"(getReviewDetailsForProduct) - Something went wrong on getting details of review for the product.\n" + str(
                     e))
 
-    def separateCustomernameAndReviewAge(self, list_of_custname_and_reviewage):
-        """
-        This function separates the review age and customer name.
-        """
-        try:
-            customer_name = list_of_custname_and_reviewage[0::2]
-            review_age = list_of_custname_and_reviewage[1::2]
-            return customer_name, review_age
-        except Exception as e:
-            raise Exception(f"(separateCustomernameAndReviewAge) - Something went wrong.\n" + str(e))
+          
 
-    def generatingResponse(self, product_searched, product_name, price, discount_percent, offer_details, EMI, result):
-        """
-        This function generates the final response to send.
-        """
-        try:
-            response_dict = {"product_searched": [], "product_name": [], "price": [], "discount_percent": [],
-                             "offer_details": [], "EMI": [], "ratings": [], "comments": [], "customer_name": [],
-                             "review_Age": []}
-            rating, comments, cust_name, review_age = result[0], result[1], result[2], result[3]
-            response_dict["ratings"] = rating
-            response_dict["comments"] = comments
-            response_dict["customer_name"] = cust_name
-            response_dict["review_Age"] = review_age
-            response_dict["product_name"] = product_name
-            response_dict["product_searched"] = product_searched
-            response_dict["offer_details"] = offer_details
-            response_dict["EMI"] = EMI
-            response_dict["price"] = price
-            response_dict["discount_percent"] = discount_percent
-            return response_dict
-        except Exception as e:
-            raise Exception(f"(generatingResponse) - Something went wrong on generating response")
 
-    def generateDataForColumnAndFrame(self, response):
-        """
-        This function generates data for the column where only single data is presented. And then frames it in data frame.
-        """
-        try:
-            data_frame1 = pd.DataFrame()
-            flatten_rating = [j for i in response['ratings'] for j in i]
-            for column_name, value in response.items():
-                if column_name == 'product_searched' or column_name == 'product_name' or column_name == 'price' or column_name == 'discount_percent' or column_name == 'offer_details' or column_name == 'EMI':
-                    list_value = []
-                    for i in range(0, len(flatten_rating)):
-                        list_value.append(response[column_name])
-                    data_frame1.insert(0, column_name, list_value)
-            print(data_frame1)
-            return data_frame1
-        except Exception as e:
-            raise Exception(
-                f"(dataGeneration) - Something went wrong on creating data frame and data for column.\n" + str(e))
+
+
 
     def frameToDataSet(self, response):
         """
@@ -573,15 +435,7 @@ class FlipkratScrapper:
         try:
             dataframe.to_csv(file_name)
         except Exception as e:
-            raise Exception(f"(saveDataFrameToFile) - Unable to save data to the file.\n" + str(e))
-
-    def closeConnection(self):
-        """
-        This function closes the connection
-        """
-        try:
-            self.driver.close()
-        except Exception as e:
+ 
             raise Exception(f"(closeConnection) - Something went wrong on closing connection.\n" + str(e))
 
     def getReviewsToDisplay(self, searchString, expected_review, username, password, review_count):
